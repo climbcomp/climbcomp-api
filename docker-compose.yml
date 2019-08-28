@@ -6,5 +6,7 @@ services:
     build:
       context: "."
       target: "${DOCKER_TARGET:-dev}"
+    ports:
+      - "3000:3000"
     volumes:
       - ".:/go/src/app"
