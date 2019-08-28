@@ -1,0 +1,2 @@
+# github.com/climbcomp/climbcomp-go v1.0.4
+github.com/climbcomp/climbcomp-go/climbcomp
