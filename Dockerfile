@@ -10,14 +10,14 @@ WORKDIR /go/src/app
 COPY . .
 
 RUN go build -v \
-    -o /usr/local/bin/climbcomp-api \
+    -o /usr/local/bin/climbcomp \
     .
-CMD ["/usr/local/bin/climbcomp-api"]
+CMD ["/usr/local/bin/climbcomp"]
 
 
 # Production image that only contains the built app
 FROM gcr.io/distroless/base as prod
 
-COPY --from=dev /usr/local/bin/climbcomp-api /usr/local/bin/climbcomp-api
+COPY --from=dev /usr/local/bin/climbcomp /usr/local/bin/climbcomp
 
-CMD ["/usr/local/bin/climbcomp-api"]
+CMD ["/usr/local/bin/climbcomp"]
