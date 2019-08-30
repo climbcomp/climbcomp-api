@@ -9,9 +9,7 @@ RUN mkdir -p /go/src/app
 WORKDIR /go/src/app
 COPY . .
 
-RUN go build -v \
-    -o /usr/local/bin/climbcomp \
-    .
+RUN ./scripts/build
 CMD ["/usr/local/bin/climbcomp"]
 
 
