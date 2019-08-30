@@ -6,6 +6,8 @@ services:
     build:
       context: "."
       target: "${DOCKER_TARGET:-dev}"
+    environment:
+      - "CLIMBCOMP_ADDRESS=host.docker.internal:3000"
     ports:
       - "3000:3000"
     volumes:

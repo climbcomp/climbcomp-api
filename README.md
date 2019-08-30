@@ -14,14 +14,16 @@ make build
 make run
 ```
 
-In another, use prototool to make gRPC requests:
+In another, use the CLI to make requests:
 
 ```
-git clone git@github.com:climbcomp/climbcomp-proto.git
-cd climbcomp-proto
-brew install prototool
+cd climbcomp-api
 
-prototool grpc --address 0.0.0.0:3000 --method climbcomp.meta.v1.MetaAPI/GetVersion --data '{}'
+make bash
+
+# Returns the version of the API server
+# Run `climbcomp help` to see all options
+climbcomp meta version
 ```
 
 ## Testing

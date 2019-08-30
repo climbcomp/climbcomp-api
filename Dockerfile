@@ -10,7 +10,7 @@ WORKDIR /go/src/app
 COPY . .
 
 RUN ./scripts/build
-CMD ["/usr/local/bin/climbcomp"]
+CMD ["/usr/local/bin/climbcomp", "server"]
 
 
 # Production image that only contains the built app
@@ -18,4 +18,4 @@ FROM gcr.io/distroless/base as prod
 
 COPY --from=dev /usr/local/bin/climbcomp /usr/local/bin/climbcomp
 
-CMD ["/usr/local/bin/climbcomp"]
+CMD ["/usr/local/bin/climbcomp", "server"]
