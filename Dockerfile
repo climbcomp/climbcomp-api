@@ -16,6 +16,9 @@ CMD ["/usr/local/bin/climbcomp", "server"]
 # Production image that only contains the built app
 FROM gcr.io/distroless/base as prod
 
+RUN mkdir -p /etc/climbcomp
+
+COPY --from=dev /etc/climbcomp/config.yml /etc/climbcomp/config.yml
 COPY --from=dev /usr/local/bin/climbcomp /usr/local/bin/climbcomp
 
 CMD ["/usr/local/bin/climbcomp", "server"]

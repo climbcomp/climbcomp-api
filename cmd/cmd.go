@@ -12,16 +12,6 @@ func NewApp() *cli.App {
 	app.Usage = "A competition climbing API"
 	app.EnableBashCompletion = true
 
-	globalFlags := []cli.Flag{
-		cli.StringFlag{
-			Name:   "address",
-			Value:  "api.climbcomp.com:443",
-			Usage:  "The address of the climbcomp API",
-			EnvVar: "CLIMBCOMP_ADDRESS",
-		},
-	}
-	app.Flags = globalFlags
-
 	app.Commands = []cli.Command{
 		{
 			Name:   "server",
@@ -36,7 +26,6 @@ func NewApp() *cli.App {
 					Name:   "version",
 					Usage:  "Returns the server version",
 					Action: OnMetaVersionCmd,
-					Flags:  globalFlags,
 				},
 			},
 		},

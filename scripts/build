@@ -4,9 +4,13 @@ set -euo pipefail
 echo " -> Building"
 go build -v -o /usr/local/bin/climbcomp .
 
+echo " -> Installing config"
+mkdir -p /etc/climbcomp
+cp ./config.yml /etc/climbcomp/config.yml
+
 echo " -> Installing bash_completion"
-mkdir -p "/etc/bash_completion.d"
-cp ./scripts/autocomplete "/etc/bash_completion.d/climbcomp"
+mkdir -p /etc/bash_completion.d
+cp ./scripts/autocomplete /etc/bash_completion.d/climbcomp
 
 echo " -> Configuring ~/.bashrc"
 BASHRC_LINES=(

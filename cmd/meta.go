@@ -4,18 +4,19 @@ import (
 	"context"
 	"log"
 
+	"github.com/climbcomp/climbcomp-api/conf"
 	meta_pb "github.com/climbcomp/climbcomp-go/climbcomp/meta/v1"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc"
 )
 
 func OnMetaVersionCmd(c *cli.Context) error {
-	address := c.String("address")
-	log.Printf("Dialing %v", address)
+	config := conf.Instance()
+	log.Printf("Dialing %v", config.Address)
 
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	conn, err := grpc.Dial(config.Address, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("Could not dial %v: %v", address, err)
+		log.Fatalf("Could not dial %v: %v", config.Address, err)
 	}
 	defer conn.Close()
 
