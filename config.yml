@@ -1,2 +1,5 @@
 # Climbcomp gRPC address
 address: "api.climbcomp.com:443"
+
+log_format: "json"
+log_level: "info"

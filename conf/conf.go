@@ -11,7 +11,10 @@ var (
 )
 
 type Config struct {
-	Address string
+	Address string `mapstructure:"address"`
+
+	LogFormat string `mapstructure:"log_format"`
+	LogLevel  string `mapstructure:"log_level"`
 }
 
 // Config constructor

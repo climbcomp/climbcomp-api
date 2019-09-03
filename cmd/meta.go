@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"context"
-	"log"
 
 	"github.com/climbcomp/climbcomp-api/conf"
 	meta_pb "github.com/climbcomp/climbcomp-go/climbcomp/meta/v1"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc"
 )
