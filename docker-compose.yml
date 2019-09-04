@@ -6,10 +6,33 @@ services:
     build:
       context: "."
       target: "${DOCKER_TARGET:-dev}"
+    command: [
+      "berglas", "exec", "--local", "--",
+      "dockerize", "-wait", "tcp://db:5432", "-timeout", "10s",
+      "climbcomp", "server"
+    ]
+    depends_on:
+      - db
     environment:
       CLIMBCOMP_ADDRESS: "host.docker.internal:3000"
       CLIMBCOMP_LOG_FORMAT: "text"
+      CLIMBCOMP_DATABASE_URL: "postgres://climbcomp:A4271645C1EB@db:5432/climbcomp_development?sslmode=disable"
     ports:
       - "3000:3000"
     volumes:
       - ".:/go/src/app"
+      - "~/.config/gcloud:/root/.config/gcloud"
+
+  db:
+    image: "postgres:9.6.14-alpine"
+    environment:
+      POSTGRES_USER: climbcomp
+      POSTGRES_PASSWORD: A4271645C1EB
+      POSTGRES_DB: climbcomp_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - "db-volume:/var/lib/postgresql/data"
+
+volumes:
+  db-volume: {}
