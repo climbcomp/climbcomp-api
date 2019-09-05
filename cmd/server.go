@@ -7,6 +7,9 @@ import (
 	"github.com/climbcomp/climbcomp-api/conf"
 	"github.com/climbcomp/climbcomp-api/meta"
 	meta_pb "github.com/climbcomp/climbcomp-go/climbcomp/meta/v1"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -31,6 +34,14 @@ func OnServerCmd(c *cli.Context) error {
 
 	err = db.Ping()
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	m, err := migrate.New(config.MigrationsUrl, config.DatabaseUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := m.Up(); err != nil {
 		log.Fatal(err)
 	}
 

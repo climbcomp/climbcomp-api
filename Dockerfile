@@ -13,6 +13,13 @@ RUN curl -OLs https://github.com/jwilder/dockerize/releases/download/${DOCKERIZE
     rm dockerize-linux-amd64-${DOCKERIZE_VERSION}.tar.gz && \
     chmod 0755 /usr/local/bin/dockerize
 
+ENV MIGRATE_VERSION=v4.6.1
+RUN curl -OLs https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.linux-amd64.tar.gz && \
+    tar -C /usr/local/bin -xzvf migrate.linux-amd64.tar.gz && \
+    rm migrate.linux-amd64.tar.gz && \
+    mv /usr/local/bin/migrate.linux-amd64 /usr/local/bin/migrate && \
+    chmod 0755 /usr/local/bin/migrate
+
 ENV TINI_VERSION=v0.18.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/local/bin/tini
 RUN chmod 0755 /usr/local/bin/tini

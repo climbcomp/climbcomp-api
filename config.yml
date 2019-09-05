@@ -1,5 +1,8 @@
 # Climbcomp gRPC address
 address: "api.climbcomp.com:443"
+
 database_url: ""
+migrations_url: "file:///etc/climbcomp/migrations"
+
 log_format: "json"
 log_level: "info"

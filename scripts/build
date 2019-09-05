@@ -4,9 +4,10 @@ set -euo pipefail
 echo " -> Building"
 go build -v -o /usr/local/bin/climbcomp .
 
-echo " -> Installing config"
+echo " -> Installing config and migrations"
 mkdir -p /etc/climbcomp
-cp ./config.yml /etc/climbcomp/config.yml
+cp -v ./config.yml /etc/climbcomp
+cp -vR ./migrations/ /etc/climbcomp
 
 echo " -> Installing bash_completion"
 mkdir -p /etc/bash_completion.d
