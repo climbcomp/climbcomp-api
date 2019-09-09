@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-go test ./...
+echo " -> Running tests"
+go test -covermode=atomic -coverprofile=coverage.out ./...

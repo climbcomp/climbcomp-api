@@ -1,0 +1,16 @@
+language: minimal
+
+sudo: required
+
+services:
+  - docker
+
+script:
+  - make build
+  - make test
+  - make release
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+if: tag IS blank
