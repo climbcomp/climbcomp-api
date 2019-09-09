@@ -2,7 +2,6 @@ package stores
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/climbcomp/climbcomp-api/models"
@@ -14,10 +13,11 @@ import (
 // UserStore interface for persisting users
 type UserStore interface {
 	All() []models.User
+	Exists(id uuid.UUID) (bool, error)
 	Find(id uuid.UUID) (models.User, error)
 	Create(user models.User) (models.User, error)
 	Update(user models.User) (models.User, error)
-	Delete(user models.User) (models.User, error)
+	Delete(id uuid.UUID) (bool, error)
 	Reset()
 }
 
@@ -49,13 +49,18 @@ func (s *UserMemoryStore) All() []models.User {
 	return users
 }
 
+func (s *UserMemoryStore) Exists(id uuid.UUID) (bool, error) {
+	_, err := s.Find(id)
+	return err == nil, err
+}
+
 func (s *UserMemoryStore) Find(id uuid.UUID) (models.User, error) {
 	s.mux.RLock()
 	defer s.mux.RUnlock()
 
 	user, found := s.lookup[id]
 	if !found {
-		return user, fmt.Errorf("Not found: %d", id)
+		return user, errors.New("ID not found")
 	}
 
 	return user, nil
@@ -98,23 +103,28 @@ func (s *UserMemoryStore) Update(u models.User) (models.User, error) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	// TODO: update and replace user in store
+	user.Email = u.Email
+	user.Name = u.Name
+	user.Slug = u.Slug
+	user.UpdatedTime = s.Clock.Now()
+
+	s.lookup[u.ID] = user
 
 	return user, nil
 }
-func (s *UserMemoryStore) Delete(u models.User) (models.User, error) {
-	// Ensure they're in the store first
-	user, err := s.Find(u.ID)
+
+func (s *UserMemoryStore) Delete(id uuid.UUID) (bool, error) {
+	_, err := s.Find(id)
 	if err != nil {
-		return user, err
+		return false, err
 	}
 
 	s.mux.Lock()
 	defer s.mux.Unlock()
 
-	delete(s.lookup, u.ID)
+	delete(s.lookup, id)
 
-	return user, nil
+	return true, nil
 }
 
 // Helper for resetting state in between tests
