@@ -1,5 +1,7 @@
 # climbcomp-api
 
+[![Build Status](https://travis-ci.com/climbcomp/climbcomp-api.svg?branch=master)](https://travis-ci.com/climbcomp/climbcomp-api)
+
 Climbcomp gRPC server
 
 ## Install
