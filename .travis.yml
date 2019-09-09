@@ -6,8 +6,8 @@ services:
   - docker
 
 script:
-  - make build
-  - make test
+  - make build    || travis_terminate 1
+  - make test     || travis_terminate 1
   - make release
 
 after_success:
