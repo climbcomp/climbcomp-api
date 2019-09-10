@@ -42,16 +42,24 @@ func (s *UserStoreTestSuite) TearDownTest() {
 
 // Helpers
 
+func (s *UserStoreTestSuite) BuildUser(name string) models.User {
+	return s.BuildUserWithID(models.NewUUID(), name)
+}
+
+func (s *UserStoreTestSuite) BuildUserWithID(id uuid.UUID, name string) models.User {
+	return models.User{
+		ID:    id,
+		Email: fmt.Sprintf("%v@example.com", name),
+		Name:  name,
+	}
+}
+
 func (s *UserStoreTestSuite) CreateUser(name string) models.User {
 	return s.CreateUserWithID(models.NewUUID(), name)
 }
 
 func (s *UserStoreTestSuite) CreateUserWithID(id uuid.UUID, name string) models.User {
-	user, err := s.Store.Create(models.User{
-		ID:    id,
-		Email: fmt.Sprintf("%v@example.com", name),
-		Name:  name,
-	})
+	user, err := s.Store.Create(s.BuildUserWithID(id, name))
 	assert.NoError(s.T(), err)
 	return user
 }
@@ -72,14 +80,13 @@ func (s *UserStoreTestSuite) TestAllReturnsAllEntities() {
 
 func (s *UserStoreTestSuite) TestFind() {
 	t := s.T()
-	uuid := models.NewUUID()
 
+	uuid := models.NewUUID()
 	_, err := s.Store.Find(uuid)
 	assert.EqualError(t, err, "ID not found")
 
-	_ = s.CreateUserWithID(uuid, "user1")
-
-	_, err = s.Store.Find(uuid)
+	user := s.CreateUser("user1")
+	_, err = s.Store.Find(user.ID)
 	assert.NoError(t, err)
 }
 
@@ -122,37 +129,26 @@ func (s *UserStoreTestSuite) TestCreateWithNoID() {
 	assert.True(t, found)
 }
 
-func (s *UserStoreTestSuite) TestCreateWithConstraintViolations() {
+func (s *UserStoreTestSuite) TestCreateWithConstraints() {
 	t := s.T()
-	uuid1 := models.NewUUID()
-	uuid2 := models.NewUUID()
 
-	_, err := s.Store.Create(models.User{
-		ID:    uuid1,
-		Email: "user1@example.com",
-		Name:  "user1",
-	})
+	user1 := s.BuildUser("user1")
+	_, err := s.Store.Create(user1)
 	assert.NoError(t, err)
 
-	_, err = s.Store.Create(models.User{
-		ID:    uuid1,
-		Email: "user2@example.com",
-		Name:  "user2",
-	})
+	user2 := s.BuildUser("user2")
+	user2.ID = user1.ID
+	_, err = s.Store.Create(user2)
 	assert.EqualError(t, err, "ID must be unique")
 
-	_, err = s.Store.Create(models.User{
-		ID:    uuid2,
-		Email: "user1@example.com",
-		Name:  "user2",
-	})
+	user2 = s.BuildUser("user2")
+	user2.Email = user1.Email
+	_, err = s.Store.Create(user2)
 	assert.EqualError(t, err, "Email must be unique")
 
-	_, err = s.Store.Create(models.User{
-		ID:    uuid2,
-		Email: "user2@example.com",
-		Name:  "user1",
-	})
+	user2 = s.BuildUser("user2")
+	user2.Name = user1.Name
+	_, err = s.Store.Create(user2)
 	assert.EqualError(t, err, "Name must be unique")
 }
 
@@ -177,22 +173,46 @@ func (s *UserStoreTestSuite) TestUpdate() {
 	assert.Equal(t, updatedTime, persisted.UpdatedTime)
 }
 
+func (s *UserStoreTestSuite) TestUpdateWhenMissing() {
+	t := s.T()
+	user := s.BuildUser("user1")
+
+	_, err := s.Store.Update(user)
+	assert.EqualError(t, err, "ID not found")
+
+	found, _ := s.Store.Exists(user.ID)
+	assert.False(t, found)
+}
+
+func (s *UserStoreTestSuite) TestUpdateWithConstraints() {
+	t := s.T()
+	user1 := s.CreateUser("user1")
+	user2 := s.CreateUser("user2")
+
+	user2.Email = user1.Email
+	_, err := s.Store.Update(user2)
+	assert.EqualError(t, err, "Email must be unique")
+
+	user2.Name = user1.Name
+	_, err = s.Store.Update(user2)
+	assert.EqualError(t, err, "Name must be unique")
+}
+
 func (s *UserStoreTestSuite) TestDelete() {
 	t := s.T()
-	uuid := models.NewUUID()
+	user := s.CreateUser("user1")
 
-	_ = s.CreateUserWithID(uuid, "user1")
-	found, _ := s.Store.Exists(uuid)
+	found, _ := s.Store.Exists(user.ID)
 	assert.True(t, found)
 
-	deleted, err := s.Store.Delete(uuid)
+	deleted, err := s.Store.Delete(user.ID)
 	assert.True(t, deleted)
 	assert.NoError(t, err)
 
-	found, _ = s.Store.Exists(uuid)
+	found, _ = s.Store.Exists(user.ID)
 	assert.False(t, found)
 
-	deleted, err = s.Store.Delete(uuid)
+	deleted, err = s.Store.Delete(user.ID)
 	assert.False(t, deleted)
 	assert.EqualError(t, err, "ID not found")
 }

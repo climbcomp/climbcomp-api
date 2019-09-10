@@ -55,14 +55,10 @@ func (s *UserMemoryStore) Exists(id uuid.UUID) (bool, error) {
 }
 
 func (s *UserMemoryStore) Find(id uuid.UUID) (models.User, error) {
-	s.mux.RLock()
-	defer s.mux.RUnlock()
-
 	user, found := s.lookup[id]
 	if !found {
 		return user, errors.New("ID not found")
 	}
-
 	return user, nil
 }
 
@@ -73,16 +69,14 @@ func (s *UserMemoryStore) Create(u models.User) (models.User, error) {
 	user := u.Clone()
 	user.EnsureID()
 
-	for _, existing := range s.lookup {
-		if user.ID == existing.ID {
-			return user, errors.New("ID must be unique")
-		}
-		if user.Name == existing.Name {
-			return user, errors.New("Name must be unique")
-		}
-		if user.Email == existing.Email {
-			return user, errors.New("Email must be unique")
-		}
+	found, _ := s.Exists(user.ID)
+	if found {
+		return user, errors.New("ID must be unique")
+	}
+
+	err := s.enforceConstraints(user)
+	if err != nil {
+		return user, err
 	}
 
 	user.CreatedTime = s.Clock.Now()
@@ -94,18 +88,21 @@ func (s *UserMemoryStore) Create(u models.User) (models.User, error) {
 }
 
 func (s *UserMemoryStore) Update(u models.User) (models.User, error) {
-	// Ensure they're in the store first
-	user, err := s.Find(u.ID)
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	user := u.Clone()
+
+	found, err := s.Exists(user.ID)
+	if !found {
+		return user, err
+	}
+
+	err = s.enforceConstraints(user)
 	if err != nil {
 		return user, err
 	}
 
-	s.mux.Lock()
-	defer s.mux.Unlock()
-
-	user.Email = u.Email
-	user.Name = u.Name
-	user.Slug = u.Slug
 	user.UpdatedTime = s.Clock.Now()
 
 	s.lookup[u.ID] = user
@@ -114,13 +111,13 @@ func (s *UserMemoryStore) Update(u models.User) (models.User, error) {
 }
 
 func (s *UserMemoryStore) Delete(id uuid.UUID) (bool, error) {
-	_, err := s.Find(id)
-	if err != nil {
-		return false, err
-	}
-
 	s.mux.Lock()
 	defer s.mux.Unlock()
+
+	found, err := s.Exists(id)
+	if !found {
+		return false, err
+	}
 
 	delete(s.lookup, id)
 
@@ -130,4 +127,19 @@ func (s *UserMemoryStore) Delete(id uuid.UUID) (bool, error) {
 // Helper for resetting state in between tests
 func (s *UserMemoryStore) Reset() {
 	s.lookup = make(map[uuid.UUID]models.User)
+}
+
+func (s *UserMemoryStore) enforceConstraints(u models.User) error {
+	for _, existing := range s.lookup {
+		if u.ID == existing.ID {
+			continue
+		}
+		if u.Name == existing.Name {
+			return errors.New("Name must be unique")
+		}
+		if u.Email == existing.Email {
+			return errors.New("Email must be unique")
+		}
+	}
+	return nil
 }
